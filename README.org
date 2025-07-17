@@ -1,0 +1,70 @@
+#+TITLE: cpp-func-impl.el
+#+AUTHOR: Dheeraj Vittal Shenoy
+#+LANGUAGE: en
+
+* Overview
+
+This Emacs package provides a utility to generate out-of-line method implementations for C++ classes. It leverages Tree-sitter for accurate parsing of C++ declarations directly from header files.
+
+Place your cursor on a C++ method declaration inside a header file, run the command, and the function body will be automatically generated and inserted in the corresponding source (.cpp) file.
+
+Templated methods are fully supported.
+
+* Features
+
+- Parses C++ class and method declarations using Tree-sitter.
+- Generates implementation stubs with correct return type and fully qualified names.
+- Automatically switches to the corresponding source file.
+- Handles both regular and templated methods.
+- Optionally inserts a TODO comment stub inside the function body.
+
+* Requirements
+
+- Emacs 29+ with Tree-sitter support.
+- C++ major mode using Tree-sitter backend (`c++-ts-mode`).
+- A valid project structure with corresponding `.cpp` files discoverable via `ff-find-other-file`.
+
+* Installation
+
+1. Ensure Tree-sitter is enabled in Emacs and that `c++-ts-mode` is active.
+2. Add this file to your Emacs load path.
+3. Require the library or load during C++ mode using a hook:
+
+   #+begin_src emacs-lisp
+(require 'cpp-func-impl)
+   #+end_src
+
+4. Use the command `cpp-func-impl-implement` when on a function in a class. Optionally bind it to a key:
+
+   #+begin_src emacs-lisp
+   (define-key c++-ts-mode-map (kbd "C-c C-i") #'cpp-func-impl-implement)
+   #+end_src
+
+* Usage
+
+1. Open a C++ header file (.hpp).
+2. Place the cursor on the line of the method declaration (regular or template).
+3. Run:
+
+   #+begin_src emacs-lisp
+   M-x cpp-func-impl-implement
+   #+end_src
+
+4. You will be taken to the corresponding `.cpp` file, and the method stub will be inserted at the bottom of the file.
+
+If you call the command with a prefix argument (e.g. `C-u M-x cpp-func-impl-implement`), a `// TODO: Implement` comment is inserted.
+
+* Limitations
+
+- Only works in C++ files (not C).
+- Requires header/source pair to be correctly mapped.
+- Does not yet support method overloading disambiguation.
+- Does not support auto-discovery of already existing method definition.
+
+* License
+
+MIT License
+
+* Contributing
+
+Contributions, suggestions, or bug reports are welcome. Feel free to fork and submit a pull request or open an issue.
