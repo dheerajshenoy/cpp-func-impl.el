@@ -182,10 +182,16 @@ IMPLEMENTATION, COMMENT and optionally INSERT-DOC."
       (nreverse method-nodes))))
 
 
+(defun cpp-func-impl--get-decl-info (node)
+  "Return plist of info about the C++ method of `node`, supporting template and regular methods.
+Returns: `:class-name`, `:method-name`, `:return-type`, `:text`, optionally `:template-param`."
+  (let* (;; Step 1: Get function_declarator
          (func-decl
-          (treesit-parent-until node
-                                (lambda (n)
-                                  (string= (treesit-node-type n) "function_declarator")))))
+          (if (string= (treesit-node-type node) "function_declarator")
+              node
+            (treesit-parent-until node
+                                  (lambda (n)
+                                    (string= (treesit-node-type n) "function_declarator"))))))
 
     (unless func-decl
       (user-error "No function declarator found at point"))
