@@ -75,9 +75,6 @@ These will be expanded dynamically when the implementation stub is inserted."
   :type 'string
   :group 'cpp-func-impl)
 
-(defun cpp-func-impl--get-decl-info ()
-  "Return plist of info about the C++ method at point, supporting template and regular methods.
-Returns: `:class-name`, `:method-name`, `:return-type`, `:text`, optionally `:template-param`."
 ;;; Helper functions
 
 (defun cpp-func-impl--insert-implementation (template-text implementation comment &optional insert-doc)
@@ -94,6 +91,33 @@ IMPLEMENTATION, COMMENT and optionally INSERT-DOC."
         (insert "\n"))
     (insert "\n"))
   (insert "}\n"))
+
+
+(defun cpp-func-impl--get-methods ()
+  "Returns a list of all method nodes in the class at point using Tree-sitter."
+  (interactive)
+  (let* ((node (treesit-node-at (point)))
+         (class-node (treesit-parent-until node
+                                           (lambda (n)
+                                             (string= (treesit-node-type n) "class_specifier")))))
+    (unless class-node
+      (user-error "Not inside a class declaration"))
+
+    (let* ((body (treesit-node-child-by-field-name class-node "body"))
+           (decls (treesit-filter-child
+                   body
+                   (lambda (n)
+                     (member (treesit-node-type n) '("field_declaration" "template_declaration")))
+                   t))
+           (methods '()))
+      (dolist (decl decls)
+        (let* ((func-decl (treesit-search-subtree
+                           decl
+                           (lambda (n)
+                             (string= (treesit-node-type n) "function_declarator")))))
+          (when func-decl
+            (push func-decl methods))))
+      (nreverse methods))))
 
   (interactive)
   (let* ((node (treesit-node-at (point)))
