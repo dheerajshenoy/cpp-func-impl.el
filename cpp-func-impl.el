@@ -5,7 +5,7 @@
 ;; Author: Dheeraj Vittal Shenoy <dheerajshenoy22@gmail.com>
 ;; Maintainer: Dheeraj Vittal Shenoy <dheerajshenoy22@gmail.com>
 ;; Version: 0.1
-;; Package-Requires: ((emacs "29") (treesitter))
+;; Package-Requires: ((emacs "29"))
 ;; Keywords: convenience, c++, c++-ts
 ;; URL: https://github.com/dheerajshenoy/cpp-func-impl.el
 
@@ -243,6 +243,7 @@ Returns: `:class-name`, `:method-name`, `:return-type`, `:text`, optionally `:te
             :template-param template-text))))
 
 
+
 (defun cpp-func-impl--format-comment (class-name method-name)
   "Format the comment string using the different format specifiers.
 
@@ -264,6 +265,7 @@ Valid format specifiers are:
          ("%t" time)))
      cpp-func-impl-comment-string)))
 
+;;; Interactive functions
 
 ;;;###autoload
 (defun cpp-func-impl-implement (&optional insert-doc)
@@ -294,7 +296,6 @@ for this command to work."
          (impl (format "%s %s::%s"
                        return-type class-name text))
          (comment (cpp-func-impl--format-comment class-name method-name)))
-
 
     ;; Jump to the corresponding .cpp file
     (ff-find-other-file)
