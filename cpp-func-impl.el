@@ -119,9 +119,35 @@ IMPLEMENTATION, COMMENT and optionally INSERT-DOC."
             (push func-decl methods))))
       (nreverse methods))))
 
+(defun cpp-func-impl--get-virtual-methods ()
+  "Return a list of all virtual method declarator nodes in the class at point using Tree-sitter."
   (interactive)
   (let* ((node (treesit-node-at (point)))
-         ;; Step 1: Get function_declarator
+         (class-node (treesit-parent-until node
+                                           (lambda (n)
+                                             (string= (treesit-node-type n) "class_specifier")))))
+    (unless class-node
+      (user-error "Not inside a class declaration"))
+
+    (let* ((body (treesit-node-child-by-field-name class-node "body"))
+           (method-nodes '()))
+      (dolist (child (treesit-filter-child body #'identity t))
+        ;; Look for declarations and template_declarations
+        (when (member (treesit-node-type child) '("field_declaration" "template_declaration"))
+          (let ((virtual-node
+                 (treesit-filter-child child
+                                         (lambda (n)
+                                           (string= (treesit-node-type n) "virtual")))))
+            (when virtual-node
+              ;; Get the function_declarator inside this declaration
+              (let ((func-decl
+                     (treesit-search-subtree child
+                                             (lambda (n)
+                                               (string= (treesit-node-type n) "function_declarator")))))
+                (when func-decl
+                  (push func-decl method-nodes)))))))
+      (nreverse method-nodes))))
+
          (func-decl
           (treesit-parent-until node
                                 (lambda (n)
