@@ -302,17 +302,7 @@ for this command to work."
     (goto-char (point-max))
 
     ;; Insert implementation
-    (insert "\n")
-    (when template-text
-      (insert (format "template %s" template-text) "\n"))
-    (insert impl "\n{\n")
-    (if insert-doc
-        (progn
-          (insert comment)
-          (indent-region (line-beginning-position) (line-end-position))
-          (insert "\n"))
-      (insert "\n"))
-    (insert "}\n")
+    (cpp-func-impl--insert-implementation template-text impl comment)
 
     ;; Move cursor inside the function body
     (forward-line -2)
