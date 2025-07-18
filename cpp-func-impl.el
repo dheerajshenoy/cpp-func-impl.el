@@ -49,10 +49,15 @@
 ;; Usage: Place cursor on a method declaration inside a class, and
 ;;   run: M-x cpp-func-impl-implement or bind it to a key for convenience.
 
+
+;;; Group
+
 (defgroup cpp-func-impl nil
   "Inserts C++ method implementations from class declarations using Tree-Sitter."
   :group 'tools
   :prefix "cpp-func-impl-")
+
+;;; Custom Variables
 
 (defcustom cpp-func-impl-comment-string "// TODO: implement `%m`"
   "Comment inserted in the function body.
