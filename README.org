@@ -4,7 +4,7 @@
 
 * Overview
 
-This Emacs package provides a utility to generate out-of-line method implementations for C++ classes. It leverages Tree-sitter for accurate parsing of C++ declarations directly from header files.
+This Emacs package provides a utility to generate out-of-line method implementations for C++ classes. It leverages [[https:tree-sitter.github.io/tree-sitter/][Tree Sitter]] for accurate parsing of C++ declarations directly from header files.
 
 Place your cursor on a C++ method declaration inside a header file, run the command, and the function body will be automatically generated and inserted in the corresponding source (.cpp) file.
 
@@ -36,7 +36,7 @@ Templated methods are fully supported.
 
 * Installation
 
-1. Ensure Tree-sitter is enabled in Emacs and that `c++-ts-mode` is active.
+1. Ensure =Tree-sitter= is enabled in Emacs and that =c++-ts-mode= is active.
 2. Add this file to your Emacs load path.
 3. Require the library or load during C++ mode using a hook:
 
@@ -47,7 +47,7 @@ Templated methods are fully supported.
 4. Use the command `cpp-func-impl-implement` when on a function in a class. Optionally bind it to a key:
 
    #+begin_src emacs-lisp
-   (define-key c++-ts-mode-map (kbd "C-c C-i") #'cpp-func-impl-implement)
+(define-key c++-ts-mode-map (kbd "C-c C-i") #'cpp-func-impl-implement)
    #+end_src
 
 * Usage
