@@ -78,6 +78,23 @@ These will be expanded dynamically when the implementation stub is inserted."
 (defun cpp-func-impl--get-decl-info ()
   "Return plist of info about the C++ method at point, supporting template and regular methods.
 Returns: `:class-name`, `:method-name`, `:return-type`, `:text`, optionally `:template-param`."
+;;; Helper functions
+
+(defun cpp-func-impl--insert-implementation (template-text implementation comment &optional insert-doc)
+  "Inserts the implementation to the buffer given TEMPLATE-TEXT,
+IMPLEMENTATION, COMMENT and optionally INSERT-DOC."
+  (insert "\n")
+  (when template-text
+    (insert (format "template %s" template-text) "\n"))
+  (insert implementation "\n{\n")
+  (if insert-doc
+      (progn
+        (insert comment)
+        (indent-region (line-beginning-position) (line-end-position))
+        (insert "\n"))
+    (insert "\n"))
+  (insert "}\n"))
+
   (interactive)
   (let* ((node (treesit-node-at (point)))
          ;; Step 1: Get function_declarator
