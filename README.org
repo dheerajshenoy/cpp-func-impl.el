@@ -19,11 +19,11 @@ Please open an issue if there are any problems.
 
 + Regular functions
 
-[[images/regular.gif]]
+[[file:images/regular.gif]]
 
 + Templated functions
 
-[[images/templated.gif]]
+[[file:images/templated.gif]]
 
 * Features
 
