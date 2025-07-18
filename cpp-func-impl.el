@@ -6,7 +6,7 @@
 ;; Maintainer: Dheeraj Vittal Shenoy <dheerajshenoy22@gmail.com>
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "29"))
-;; Keywords: convenience, c++, c++-ts
+;; Keywords: convenience, c++, treesitter
 ;; URL: https://github.com/dheerajshenoy/cpp-func-impl.el
 
 ;; This file is NOT part of GNU Emacs.
