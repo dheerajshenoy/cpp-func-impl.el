@@ -43,7 +43,7 @@ Templated methods are fully supported.
 * Usage
 
 1. Open a C++ header file (.hpp).
-2. Place the cursor on the line of the method declaration (regular or template).
+2. Place the cursor on the name of the method declaration (regular or template).
 3. Run:
 
    #+begin_src emacs-lisp
@@ -60,6 +60,7 @@ If you call the command with a prefix argument (e.g. `C-u M-x cpp-func-impl-impl
 - Requires header/source pair to be correctly mapped.
 - Does not yet support method overloading disambiguation.
 - Does not support auto-discovery of already existing method definition.
+- Only works when the cursor is on top of the function name.
 
 * License
 
