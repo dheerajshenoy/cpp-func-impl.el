@@ -28,12 +28,8 @@
 
 ;; This package provides a utility for generating out-of-class C++ method
 ;; implementations directly from header declarations. It uses Emacs's built-in
-;; Tree-sitter support to parse C++ syntax trees, allowing it to accurately extract:
-;;
-;; - Class name
-;; - Return type
-;; - Method name and full signature
-;; - Template parameter lists (if applicable)
+;; Tree-sitter support to parse C++ syntax trees, allowing it to accurately extract
+;; the syntax information of the method.
 ;;
 ;; When invoked (`cpp-func-impl-implement`), the function:
 ;;   1. Parses the current buffer to find the method declaration at point.
@@ -44,15 +40,14 @@
 ;;        - The fully qualified method name
 ;;        - An empty function body
 ;;
-;; This is especially useful in large C++ projects to avoid repetitive typing and
-;; to ensure consistent formatting when moving from header to source file.
-
+;; This is especially useful in large C++ projects to avoid repetitive typing.
+;;
 ;; Requirements:
 ;; - Emacs 29+ with Tree-sitter enabled
 ;; - A properly loaded C++ Tree-sitter grammar
 ;;
 ;; Usage: Place cursor on a method declaration inside a class, and
-;;   run: M-x dj/cpp-func-impl or bind it to a key for convenience.
+;;   run: M-x cpp-func-impl-implement or bind it to a key for convenience.
 
 (defun cpp-func-impl--get-decl-info ()
   "Return plist of info about the C++ method at point, supporting template and regular methods.
