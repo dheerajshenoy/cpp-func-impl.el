@@ -297,7 +297,8 @@ for this command to work."
 
 
     ;; Jump to the corresponding .cpp file
-    (call-interactively 'ff-find-other-file)
+    (ff-find-other-file)
+
     ;; Go to end of file to insert implementation
     (goto-char (point-max))
 
