@@ -45,9 +45,9 @@ Templated methods are fully supported.
 
 # Features
 
-## Implement all the methods in a class
-## Implement function at point
-## Implement concrete class from a given class
++ Implement all the methods in a class
++ Implement function at point
++ Implement concrete class from a given class
 
 > [!NOTE]
 > Concrete class are ordinary classes that can be instantiated and have no virtual functions.
