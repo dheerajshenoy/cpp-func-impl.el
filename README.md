@@ -113,7 +113,6 @@ Following format specifiers are supported:
 -   Requires header/source pair to be correctly mapped.
 -   Does not support auto-discovery of already existing method definition.
 -   Does not support nested environment.
--   Only works when the cursor is on top of the function name.
 
 # License
 

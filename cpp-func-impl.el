@@ -181,66 +181,74 @@ IMPLEMENTATION, COMMENT and optionally INSERT-DOC."
                   (push func-decl method-nodes)))))))
       (nreverse method-nodes))))
 
-
 (defun cpp-func-impl--get-decl-info (node)
   "Return plist of info about the C++ method of `node`, supporting template and regular methods.
 Returns: `:class-name`, `:method-name`, `:return-type`, `:text`, optionally `:template-param`."
-  (let* (;; Step 1: Get function_declarator
+  (let* (;; Always find the field_declaration first
+         (field-decl
+          (treesit-parent-until node
+                                (lambda (n)
+                                  (member (treesit-node-type n)
+                                          '("field_declaration" "declaration")))))
+
+         ;; Find function_declarator within field_declaration
          (func-decl
-          (if (string= (treesit-node-type node) "function_declarator")
-              node
-            (treesit-parent-until node
-                                  (lambda (n)
-                                    (string= (treesit-node-type n) "function_declarator"))))))
+          (when field-decl
+            (treesit-search-subtree field-decl
+                                    (lambda (n)
+                                      (string= (treesit-node-type n) "function_declarator")))))
 
-    (unless func-decl
-      (user-error "No function declarator found at point"))
+         ;; Get surrounding template_declaration (if any)
+         (template-decl
+          (when field-decl
+            (treesit-parent-until field-decl
+                                  (lambda (n)
+                                    (string= (treesit-node-type n) "template_declaration")))))
 
-    ;; Step 2: Get declaration (wrapped in template or not)
-    (let* ((declaration
-            (treesit-parent-until func-decl
-                                  (lambda (n)
-                                    (member (treesit-node-type n)
-                                            '("declaration" "field_declaration")))))
-           ;; Get surrounding template_declaration (if any)
-           (template-decl
-            (treesit-parent-until declaration
-                                  (lambda (n)
-                                    (string= (treesit-node-type n) "template_declaration"))))
-           ;; Now extract the parameter list node
-           (template-param-list
-            (when template-decl
-              (treesit-node-child-by-field-name template-decl "parameters")))
-           ;; Step 3: Extract function name manually
-           (name-node
+         (template-param-list
+          (when template-decl
+            (treesit-node-child-by-field-name template-decl "parameters")))
+
+         ;; Extract function name
+         (name-node
+          (when func-decl
             (treesit-search-subtree func-decl
                                     (lambda (n)
                                       (member (treesit-node-type n)
-                                              '("identifier" "field_identifier")))))
-           ;; Step 4: Return type
-           (type-node (treesit-node-child-by-field-name declaration "type"))
-           ;; Step 5: Class name
-           (class-node
-            (treesit-parent-until declaration
+                                              '("identifier" "field_identifier"))))))
+
+         ;; Extract return type
+         (type-node
+          (when field-decl
+            (treesit-node-child-by-field-name field-decl "type")))
+
+         ;; Class name
+         (class-node
+          (when field-decl
+            (treesit-parent-until field-decl
                                   (lambda (n)
-                                    (string= (treesit-node-type n) "class_specifier"))))
-           (class-name
-            (when class-node
-              (treesit-node-text
-               (treesit-node-child-by-field-name class-node "name"))))
-           (template-text (when template-param-list
-                            (treesit-node-text template-param-list))))
+                                    (string= (treesit-node-type n) "class_specifier")))))
 
-      (unless (and name-node class-name)
-        (user-error "Could not find method name or class name"))
+         (class-name
+          (when class-node
+            (treesit-node-text
+             (treesit-node-child-by-field-name class-node "name"))))
 
-      ;; Step 6: Return info
-      (list :class-name class-name
-            :method-name (treesit-node-text name-node)
-            :return-type (when type-node
-                           (treesit-node-text type-node))
-            :text (treesit-node-text func-decl)
-            :template-param template-text))))
+         (template-text
+          (when template-param-list
+            (treesit-node-text template-param-list))))
+
+    (unless (and func-decl name-node class-name)
+      (user-error "Could not find method, name, or class context"))
+
+    ;; Return info
+    (list :class-name class-name
+          :method-name (treesit-node-text name-node)
+          :return-type (when type-node
+                         (treesit-node-text type-node))
+          :text (treesit-node-text func-decl)
+          :template-param template-text)))
+
 
 
 
