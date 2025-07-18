@@ -10,6 +10,16 @@ Place your cursor on a C++ method declaration inside a header file, run the comm
 
 Templated methods are fully supported.
 
+* Demo
+
++ Regular functions
+
+[[images/regular.gif]]
+
++ Templated functions
+
+[[images/templated.gif]]
+
 * Features
 
 - Parses C++ class and method declarations using Tree-sitter.
