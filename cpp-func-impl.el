@@ -312,5 +312,84 @@ for this command to work."
              class-name
              (if template-text " (template)" ""))))
 
+;;;###autoload
+(defun cpp-func-impl-concrete-class ()
+  "Generate a concrete C++ class implementing all pure virtual methods from the class at point."
+  (interactive)
+  (let* ((virtual-nodes (cpp-func-impl--get-pure-virtual-methods)))
+    (if (not virtual-nodes)
+        (message "No pure virtual methods found.")
+      (let ((impl-snippets '())
+            (base-class-name nil)
+            (concrete-class-name (read-string "Enter a concrete class name: ")))
+        (dolist (node virtual-nodes)
+          (condition-case err
+              (let* ((node-info (cpp-func-impl--get-decl-info node))
+                     (method-name (plist-get node-info :method-name))
+                     (func-text (plist-get node-info :text))
+                     (return-value (plist-get node-info :return-type))
+                     (template-text (plist-get node-info :template-param)))
+                (unless base-class-name
+                  (setq base-class-name (plist-get node-info :class-name)))
+                (push
+                 (concat
+                  (when template-text
+                    (format "template %s\n" template-text))
+                  (format "%s %s override;"
+                          return-value func-text method-name))
+                 impl-snippets))
+            (error
+             (message "Skipped method: %s" (error-message-string err)))))
+
+        ;; Insert the generated class definition
+        (goto-char (point-max))
+        (insert (format "\nclass %s : public %s\n{\npublic:\n"
+                        concrete-class-name base-class-name))
+        (insert (string-join (nreverse impl-snippets) "\n"))
+        (insert "\n};\n")
+        (message "Concrete class '%s' created from base '%s'."
+                 concrete-class-name base-class-name)))))
+
+;;;###autoload
+(defun cpp-func-impl-implement-all (&optional insert-doc)
+  "Implements all the functions in the given class.
+
+If called with a prefix (\\[universal-argument]]) (INSERT-DOC), a
+comment is added in the body of the function implementation stub."
+  (interactive)
+  (let* ((func-nodes (cpp-func-impl--get-methods)))
+
+    ;; Collect all implementations
+    (let ((impl-snippets '()))
+      (when func-nodes
+        (dolist (node func-nodes)
+          (condition-case err
+              (let* ((node-info (cpp-func-impl--get-decl-info node))
+                     (method-name (plist-get node-info :method-name))
+                     (class-name (plist-get node-info :class-name))
+                     (func-text (plist-get node-info :text))
+                     (return-value (plist-get node-info :return-type))
+                     (template-text (plist-get node-info :template-param))
+                     (comment (cpp-func-impl--format-comment class-name method-name))
+                     (impl (concat
+                            (when template-text
+                              (format "template %s\n" template-text))
+                            (format "%s %s::%s\n{\n" return-value class-name func-text)
+                            (if insert-doc
+                                (concat comment "\n")
+                              "")
+                            "}\n")))
+                (push impl impl-snippets))
+            (error
+             (message "Skipped method: %s" (error-message-string err))))))
+
+      ;; Insert all at once
+      (ff-find-other-file)
+      (goto-char (point-max))
+      (insert "\n" (string-join (nreverse impl-snippets) "\n") "\n")
+      (message "Inserted %d method implementations." (length impl-snippets)))))
+
+
+
 
 (provide 'cpp-func-impl)
