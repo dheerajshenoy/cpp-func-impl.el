@@ -40,15 +40,15 @@ Templated methods are fully supported.
 2. Add this file to your Emacs load path.
 3. Require the library or load during C++ mode using a hook:
 
-   #+begin_src emacs-lisp
+#+begin_src emacs-lisp
 (require 'cpp-func-impl)
-   #+end_src
+#+end_src
 
 4. Use the command `cpp-func-impl-implement` when on a function in a class. Optionally bind it to a key:
 
-   #+begin_src emacs-lisp
+#+begin_src emacs-lisp
 (define-key c++-ts-mode-map (kbd "C-c C-i") #'cpp-func-impl-implement)
-   #+end_src
+#+end_src
 
 * Usage
 
@@ -63,6 +63,32 @@ Templated methods are fully supported.
 4. You will be taken to the corresponding `.cpp` file, and the method stub will be inserted at the bottom of the file.
 
 If you call the command with a prefix argument (e.g. `C-u M-x cpp-func-impl-implement`), a `// TODO: Implement` comment is inserted.
+
+* Customizations
+
+You can customize the comment inserted into the implementation body by setting the variable =cpp-func-impl-comment-string=.
+
+** =cpp-func-impl-comment-string=
+
+The comment string can include valid format specifiers mentioned below
+which get injected with information like =method-name=, =class-name=, =time=, =date=.
+
+Following format specifiers are supported:
+
+| Format Specifier | Meaning      |
+|------------------+--------------|
+| %c               | Class Name   |
+| %m               | Method Name  |
+| %t               | Current Time |
+| %d               | Current Date |
+
+#+begin_src elisp
+(use-package cpp-func-impl
+  :ensure nil
+  :load-path "<load-path>"
+  :custom
+  (cpp-func-impl-comment-string "// TODO: Implement `%m` for the class `%c. Added at `%t` on `%d`"))
+#+end_src
 
 * Limitations
 

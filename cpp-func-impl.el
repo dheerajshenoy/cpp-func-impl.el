@@ -49,6 +49,27 @@
 ;; Usage: Place cursor on a method declaration inside a class, and
 ;;   run: M-x cpp-func-impl-implement or bind it to a key for convenience.
 
+(defgroup cpp-func-impl nil
+  "Inserts C++ method implementations from class declarations using Tree-Sitter."
+  :group 'tools
+  :prefix "cpp-func-impl-")
+
+(defcustom cpp-func-impl-comment-string "// TODO: implement `%m`"
+  "Comment inserted in the function body.
+
+You can use format specifiers in the string to inject method or
+timestamp information automatically.
+
+Format specifiers:
+%c - Class name
+%m - Method name
+%d - Current date (YYYY-MM-DD)
+%t - Current time (HH:MM)
+
+These will be expanded dynamically when the implementation stub is inserted."
+  :type 'string
+  :group 'cpp-func-impl)
+
 (defun cpp-func-impl--get-decl-info ()
   "Return plist of info about the C++ method at point, supporting template and regular methods.
 Returns: `:class-name`, `:method-name`, `:return-type`, `:text`, optionally `:template-param`."
@@ -110,22 +131,47 @@ Returns: `:class-name`, `:method-name`, `:return-type`, `:text`, optionally `:te
             :template-param template-text))))
 
 
+(defun cpp-func-impl--format-comment (class-name method-name)
+  "Format the comment string using the different format specifiers.
+
+Valid format specifiers are:
+%c - Class name
+%m - Method name
+%d - Current date (YYYY-MM-DD)
+%t - Current time (HH:MM)"
+  (let* ((now (current-time))
+         (date (format-time-string "%F" now))
+         (time (format-time-string "%R" now)))
+    (replace-regexp-in-string
+     "%[cmdt]"
+     (lambda (match)
+       (pcase match
+         ("%c" class-name)
+         ("%m" method-name)
+         ("%d" date)
+         ("%t" time)))
+     cpp-func-impl-comment-string)))
+
+
 ;;;###autoload
 (defun cpp-func-impl-implement (&optional insert-doc)
   "Insert a C++ method implementation in the corresponding source file.
 
-When point is on a method declaration inside a class (including
-templated methods), this function uses Tree-sitter to extract relevant
-information such as the class name, method name, return type, and
-template parameters. It then inserts a properly scoped function
-definition at the end of the corresponding .cpp file.
+This function should be called with point on a C++ method declaration
+inside a class definition. It uses Tree-sitter to extract the class
+name, method name, return type, and any associated template parameters,
+then generates a skeleton implementation in the corresponding .cpp file.
 
-If called with a prefix argument INSERT-DOC (i.e. via \\[universal-argument]),
-a placeholder comment is added inside the function body to remind the user
-to implement it.
+The implementation is appended at the end of the .cpp file, with correct
+namespace qualification and template declarations (if applicable).
 
-NOTE: This function supports both regular and templated methods and requires
-Tree-sitter support for C++ to be enabled."
+If called with a prefix argument INSERT-DOC (\\[universal-argument]), a
+comment placeholder will be inserted inside the function body. The
+comment text can be customized via the `cpp-func-impl-default-comment`
+variable.
+
+Note: Tree-sitter support for C++ must be enabled in the current buffer
+for this command to work."
   (interactive "P")
   (let* ((info (cpp-func-impl--get-decl-info))
          (class-name (plist-get info :class-name))
@@ -134,7 +180,9 @@ Tree-sitter support for C++ to be enabled."
          (return-type (plist-get info :return-type))
          (template-text (plist-get info :template-param))
          (impl (format "%s %s::%s"
-                       return-type class-name text)))
+                       return-type class-name text))
+         (comment (cpp-func-impl--format-comment class-name method-name)))
+
 
     ;; Jump to the corresponding .cpp file
     (call-interactively 'ff-find-other-file)
@@ -148,7 +196,7 @@ Tree-sitter support for C++ to be enabled."
     (insert impl "\n{\n")
     (if insert-doc
         (progn
-          (insert (format "// TODO: Implement `%s`" method-name))
+          (insert comment)
           (indent-region (line-beginning-position) (line-end-position))
           (insert "\n"))
       (insert "\n"))
