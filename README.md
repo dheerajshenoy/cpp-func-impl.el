@@ -36,7 +36,7 @@ Templated methods are fully supported.
 
 2. Implement all methods in a class
 
-   ![img](images/all-methods.gif)
+   ![img](images/implement-all.gif)
 
 3. Create concrete class from another class
 
