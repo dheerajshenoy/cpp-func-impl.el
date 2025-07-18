@@ -60,33 +60,23 @@ Templated methods are fully supported.
 
 # Installation
 
-1.  Ensure `Tree-sitter` is enabled in Emacs and that `c++-ts-mode` is active.
-2.  Add this file to your Emacs load path.
-3.  Require the library or load during C++ mode using a hook:
+1. Clone this repo and add it to load path and add the following to your ``init.el`` file:
 
-```emacs-lisp
+```elisp
 (require 'cpp-func-impl)
-```
-
-1.  Use the command \`cpp-func-impl-implement\` when on a function in a class. Optionally bind it to a key:
-
-```emacs-lisp
-(define-key c++-ts-mode-map (kbd "C-c C-i") #'cpp-func-impl-implement)
 ```
 
 # Usage
 
-1.  Open a C++ header file (.hpp).
-2.  Place the cursor on the name of the method declaration (regular or template).
-3.  Run:
+You have the following functions that can be invoked:
 
-    ```emacs-lisp
-       M-x cpp-func-impl-implement
-    ```
++ `cpp-func-impl-implement` - Implements the method at point.
++ `cpp-func-impl-implement-all` - Implements all the method inside the class (assuming the point is inside the class).
++ `cpp-func-impl-concrete-class` - Creats a concrete class of the class where the point lies inside.
 
-4.  You will be taken to the corresponding \`.cpp\` file, and the method stub will be inserted at the bottom of the file.
-
-If you call the command with a prefix argument (e.g. \`C-u M-x cpp-func-impl-implement\`), a \`// TODO: Implement\` comment is inserted.
+If you call the commands with a prefix argument a comment is inserted.
+This comment can be changed by setting the variable
+`cpp-func-impl-comment-string`.
 
 # Customizations
 
