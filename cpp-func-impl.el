@@ -148,6 +148,40 @@ IMPLEMENTATION, COMMENT and optionally INSERT-DOC."
                   (push func-decl method-nodes)))))))
       (nreverse method-nodes))))
 
+(defun cpp-func-impl--get-pure-virtual-methods ()
+  "Return a list of all *pure* virtual method declarator nodes in the class at point using Tree-sitter."
+  (interactive)
+  (let* ((node (treesit-node-at (point)))
+         (class-node (treesit-parent-until node
+                                           (lambda (n)
+                                             (string= (treesit-node-type n) "class_specifier")))))
+    (unless class-node
+      (user-error "Not inside a class declaration"))
+
+    (let* ((body (treesit-node-child-by-field-name class-node "body"))
+           (method-nodes '()))
+      (dolist (child (treesit-filter-child body #'identity t))
+        (when (member (treesit-node-type child) '("field_declaration" "template_declaration"))
+          (let ((has-virtual
+                 (treesit-filter-child child
+                                       (lambda (n)
+                                         (string= (treesit-node-type n) "virtual"))))
+                (has-eq-zero
+                 (treesit-filter-child child
+                                       (lambda (n)
+                                         (and (string= (treesit-node-type n) "number_literal")
+                                              (string= (treesit-node-text n) "0"))))))
+            (when (and has-virtual has-eq-zero)
+              (message (treesit-node-text child))
+              (let ((func-decl
+                     (treesit-search-subtree child
+                                             (lambda (n)
+                                               (string= (treesit-node-type n) "function_declarator")))))
+                (when func-decl
+                  (push func-decl method-nodes)))))))
+      (nreverse method-nodes))))
+
+
          (func-decl
           (treesit-parent-until node
                                 (lambda (n)
