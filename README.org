@@ -10,6 +10,11 @@ Place your cursor on a C++ method declaration inside a header file, run the comm
 
 Templated methods are fully supported.
 
+#+begin_warning
+I am new to Emacs Lisp and this plugin is still in early stages and it might not work all the time.
+Please open an issue if there are any problems.
+#+end_warning
+
 * Demo
 
 + Regular functions
@@ -94,8 +99,8 @@ Following format specifiers are supported:
 
 - Only works in C++ files (not C).
 - Requires header/source pair to be correctly mapped.
-- Does not yet support method overloading disambiguation.
 - Does not support auto-discovery of already existing method definition.
+- Does not support nested environment.
 - Only works when the cursor is on top of the function name.
 
 * License
