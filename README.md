@@ -18,28 +18,39 @@ Place your cursor on a C++ method declaration inside a header file, run the comm
 
 Templated methods are fully supported.
 
-> ![WARNING]
+> [!CAUTION]
 > I am new to Emacs Lisp and this plugin is still in early stages and it might not work all the time.
 > Please open an issue if there are any problems.
 
 # Demo
 
--   Regular functions
+1. Implement function at point
 
-![img](images/regular.gif)
+    -   Regular functions
 
--   Templated functions
+    ![img](images/regular.gif)
 
-![img](images/templated.gif)
+    -   Templated functions
+
+    ![img](images/templated.gif)
+
+2. Implement all methods in a class
+
+   ![img](images/all-methods.gif)
+
+3. Create concrete class from another class
+
+   ![img](images/concrete-class.gif)
 
 
 # Features
 
--   Parses C++ class and method declarations using Tree-sitter.
--   Generates implementation stubs with correct return type and fully qualified names.
--   Automatically switches to the corresponding source file.
--   Handles both regular and templated methods.
--   Optionally inserts a TODO comment stub inside the function body.
+## Implement all the methods in a class
+## Implement function at point
+## Implement concrete class from a given class
+
+> [!NOTE]
+> Concrete class are ordinary classes that can be instantiated and have no virtual functions.
 
 # Requirements
 
