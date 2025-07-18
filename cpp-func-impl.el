@@ -344,10 +344,12 @@ for this command to work."
 
         ;; Insert the generated class definition
         (goto-char (point-max))
-        (insert (format "\nclass %s : public %s\n{\npublic:\n"
-                        concrete-class-name base-class-name))
-        (insert (string-join (nreverse impl-snippets) "\n"))
-        (insert "\n};\n")
+        (let ((beg (point)))
+          (insert (format "\nclass %s : public %s\n{\npublic:\n"
+                          concrete-class-name base-class-name))
+          (insert (string-join (nreverse impl-snippets) "\n"))
+          (insert "\n};\n")
+          (indent-region beg (point)))
         (message "Concrete class '%s' created from base '%s'."
                  concrete-class-name base-class-name)))))
 
