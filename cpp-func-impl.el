@@ -285,7 +285,7 @@ variable.
 Note: Tree-sitter support for C++ must be enabled in the current buffer
 for this command to work."
   (interactive "P")
-  (let* ((info (cpp-func-impl--get-decl-info))
+  (let* ((info (cpp-func-impl--get-decl-info (treesit-node-at (point))))
          (class-name (plist-get info :class-name))
          (method-name (plist-get info :method-name))
          (text (plist-get info :text))
