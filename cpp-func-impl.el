@@ -356,7 +356,26 @@ for this command to work."
 
 ;;;###autoload
 (defun cpp-func-impl-implement-all (&optional insert-doc)
-  "Implements all the functions in the given class.
+  "Implements all the C++ methds of given class in the corresponding source file.
+
+This function should be called with point inside C++ class with atleast
+one method declaration inside. It uses Tree-sitter to extract the class
+name, method name, return type, and any associated template parameters,
+then generates a skeleton implementation in the corresponding .cpp file.
+
+The implementation is appended at the end of the .cpp file, with correct
+namespace qualification and template declarations (if applicable).
+
+
+If called with a prefix argument INSERT-DOC (\\[universal-argument]), a
+comment placeholder will be inserted inside the function body. The
+comment text can be customized via the `cpp-func-impl-default-comment`
+variable.
+
+NOTE: Nested namespace and class may not work.
+
+Note: Tree-sitter support for C++ must be enabled in the current buffer
+for this command to work.
 
 If called with a prefix (\\[universal-argument]]) (INSERT-DOC), a
 comment is added in the body of the function implementation stub."
