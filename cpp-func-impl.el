@@ -387,10 +387,8 @@ comment is added in the body of the function implementation stub."
       ;; Insert all at once
       (ff-find-other-file)
       (goto-char (point-max))
-      (insert "\n" (string-join (nreverse impl-snippets) "\n") "\n")
-      (message "Inserted %d method implementations." (length impl-snippets)))))
-
-
+      (message "Inserted %d method implementations." (length impl-snippets))
+      (insert "\n" (string-join (nreverse impl-snippets) "\n") "\n"))))
 
 
 (provide 'cpp-func-impl)
