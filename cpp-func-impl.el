@@ -1,4 +1,4 @@
-;;; cpp-func-impl.el --- C++ methods implement timesaver -*- lexical-binding: t; -*-
+;;; cpp-func-impl.el --- C++ methods implementation timesaver -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2025 Free Software Foundation, Inc.
 
@@ -136,8 +136,8 @@ IMPLEMENTATION, COMMENT and optionally INSERT-DOC."
         (when (member (treesit-node-type child) '("field_declaration" "template_declaration"))
           (let ((virtual-node
                  (treesit-filter-child child
-                                         (lambda (n)
-                                           (string= (treesit-node-type n) "virtual")))))
+                                       (lambda (n)
+                                         (string= (treesit-node-type n) "virtual")))))
             (when virtual-node
               ;; Get the function_declarator inside this declaration
               (let ((func-decl
@@ -411,6 +411,5 @@ comment is added in the body of the function implementation stub."
       (goto-char (point-max))
       (message "Inserted %d method implementations." (length impl-snippets))
       (insert "\n" (string-join (nreverse impl-snippets) "\n") "\n"))))
-
 
 (provide 'cpp-func-impl)

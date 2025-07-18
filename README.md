@@ -1,3 +1,7 @@
+# cpp-func-impl.el
+
+C++ class methods implementation timesaver.
+
 - [Overview](#overview)
 - [Demo](#demo)
 - [Features](#features)
