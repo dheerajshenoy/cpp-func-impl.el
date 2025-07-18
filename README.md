@@ -1,18 +1,14 @@
-- [Overview](#org55edca2)
-- [Demo](#org8344660)
-- [Features](#org8d2fcbe)
-- [Requirements](#orgdbfcf75)
-- [Installation](#org647e2e3)
-- [Usage](#org0171ea2)
-- [Customizations](#org2f66a0a)
-  - [`cpp-func-impl-comment-string`](#orgd90d318)
-- [Limitations](#org24c0188)
-- [License](#orgfc5bea7)
-- [Contributing](#orgd8bf85b)
-
-
-
-<a id="org55edca2"></a>
+- [Overview](#overview)
+- [Demo](#demo)
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Customizations](#customizations)
+  - [`cpp-func-impl-comment-string`](#cpp-func-impl-comment-string)
+- [Limitations](#limitations)
+- [License](#license)
+- [Contributing](#contributing)
 
 # Overview
 
@@ -22,16 +18,9 @@ Place your cursor on a C++ method declaration inside a header file, run the comm
 
 Templated methods are fully supported.
 
-<div class="warning" id="org8dac365">
-<p>
-I am new to Emacs Lisp and this plugin is still in early stages and it might not work all the time.
-Please open an issue if there are any problems.
-</p>
-
-</div>
-
-
-<a id="org8344660"></a>
+> ![WARNING]
+> I am new to Emacs Lisp and this plugin is still in early stages and it might not work all the time.
+> Please open an issue if there are any problems.
 
 # Demo
 
@@ -44,8 +33,6 @@ Please open an issue if there are any problems.
 ![img](images/templated.gif)
 
 
-<a id="org8d2fcbe"></a>
-
 # Features
 
 -   Parses C++ class and method declarations using Tree-sitter.
@@ -54,17 +41,11 @@ Please open an issue if there are any problems.
 -   Handles both regular and templated methods.
 -   Optionally inserts a TODO comment stub inside the function body.
 
-
-<a id="orgdbfcf75"></a>
-
 # Requirements
 
 -   Emacs 29+ with Tree-sitter support.
 -   C++ major mode using Tree-sitter backend (\`c++-ts-mode\`).
 -   A valid project structure with corresponding \`.cpp\` files discoverable via \`ff-find-other-file\`.
-
-
-<a id="org647e2e3"></a>
 
 # Installation
 
@@ -82,15 +63,12 @@ Please open an issue if there are any problems.
 (define-key c++-ts-mode-map (kbd "C-c C-i") #'cpp-func-impl-implement)
 ```
 
-
-<a id="org0171ea2"></a>
-
 # Usage
 
 1.  Open a C++ header file (.hpp).
 2.  Place the cursor on the name of the method declaration (regular or template).
 3.  Run:
-    
+
     ```emacs-lisp
        M-x cpp-func-impl-implement
     ```
@@ -99,15 +77,9 @@ Please open an issue if there are any problems.
 
 If you call the command with a prefix argument (e.g. \`C-u M-x cpp-func-impl-implement\`), a \`// TODO: Implement\` comment is inserted.
 
-
-<a id="org2f66a0a"></a>
-
 # Customizations
 
 You can customize the comment inserted into the implementation body by setting the variable `cpp-func-impl-comment-string`.
-
-
-<a id="orgd90d318"></a>
 
 ## `cpp-func-impl-comment-string`
 
@@ -116,7 +88,7 @@ The comment string can include valid format specifiers mentioned below which get
 Following format specifiers are supported:
 
 | Format Specifier | Meaning      |
-|---------------- |------------ |
+|------------------|--------------|
 | %c               | Class Name   |
 | %m               | Method Name  |
 | %t               | Current Time |
@@ -130,9 +102,6 @@ Following format specifiers are supported:
   (cpp-func-impl-comment-string "// TODO: Implement `%m` for the class `%c. Added at `%t` on `%d`"))
 ```
 
-
-<a id="org24c0188"></a>
-
 # Limitations
 
 -   Only works in C++ files (not C).
@@ -141,15 +110,9 @@ Following format specifiers are supported:
 -   Does not support nested environment.
 -   Only works when the cursor is on top of the function name.
 
-
-<a id="orgfc5bea7"></a>
-
 # License
 
 MIT License
-
-
-<a id="orgd8bf85b"></a>
 
 # Contributing
 
