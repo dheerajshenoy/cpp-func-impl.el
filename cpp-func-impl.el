@@ -132,7 +132,7 @@ to implement it.
 NOTE: This function supports both regular and templated methods and requires
 Tree-sitter support for C++ to be enabled."
   (interactive "P")
-  (let* ((info (dj/get-decl-info))
+  (let* ((info (cpp-func-impl--get-decl-info))
          (class-name (plist-get info :class-name))
          (method-name (plist-get info :method-name))
          (text (plist-get info :text))
