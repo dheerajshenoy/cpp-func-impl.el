@@ -15,3 +15,5 @@ dist/
 
 # Undo-tree save-files
 *.~undo-tree
+
+cpp-func-impl-autoloads.el
