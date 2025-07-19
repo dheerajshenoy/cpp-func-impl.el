@@ -84,11 +84,10 @@ Argument is the list of nodes for which the names are to be returned."
   (let ((display-pairs '()))
     (dolist (node nodes)
       (let* ((info (cpp-func-impl--get-decl-info node))
-             (method (plist-get info :method-name))
+             (qualified-class-name (cpp-func-impl--get-qualified-class-name node))
              (ret (plist-get info :return-type))
-             (class (plist-get info :class-name))
              (sig (plist-get info :text))
-             (display (format "%s %s::%s" ret class sig)))
+             (display (format "%s %s::%s" ret qualified-class-name sig)))
         (push (cons display node) display-pairs)))
     display-pairs))
 
@@ -111,6 +110,16 @@ IMPLEMENTATION, COMMENT and optionally INSERT-DOC."
     (insert "\n"))
   (insert "}\n"))
 
+(defun cpp-func-impl--get-qualified-class-name (node)
+  "Walks up the AST from NODE to collect nested class names."
+  (let ((names '()))
+    (while node
+      (when (string= (treesit-node-type node) "class_specifier")
+        (let ((name-node (treesit-node-child-by-field-name node "name")))
+          (when name-node
+            (push (treesit-node-text name-node) names))))
+      (setq node (treesit-node-parent node)))
+    (string-join names "::")))
 
 (defun cpp-func-impl--get-methods ()
   "Returns a list of all method nodes in the class at point using Tree-sitter."
@@ -319,8 +328,9 @@ for this command to work."
          (text (plist-get info :text))
          (return-type (plist-get info :return-type))
          (template-text (plist-get info :template-param))
+         (qualified-class-name (cpp-func-impl--get-qualified-class-name (treesit-node-at (point))))
          (impl (format "%s %s::%s"
-                       return-type class-name text))
+                       return-type qualified-class-name text))
          (comment (cpp-func-impl--format-comment class-name method-name)))
 
     ;; Jump to the corresponding .cpp file
@@ -419,11 +429,12 @@ comment is added in the body of the function implementation stub."
                      (func-text (plist-get node-info :text))
                      (return-value (plist-get node-info :return-type))
                      (template-text (plist-get node-info :template-param))
+                     (qualified-class-name (cpp-func-impl--get-qualified-class-name node))
                      (comment (cpp-func-impl--format-comment class-name method-name))
                      (impl (concat
                             (when template-text
                               (format "template %s\n" template-text))
-                            (format "%s %s::%s\n{\n" return-value class-name func-text)
+                            (format "%s %s::%s\n{\n" return-value qualified-class-name func-text)
                             (if insert-doc
                                 (concat comment "\n")
                               "")
@@ -482,11 +493,12 @@ comment is added in the body of the function implementation stub."
                  (func-text (plist-get node-info :text))
                  (return-value (plist-get node-info :return-type))
                  (template-text (plist-get node-info :template-param))
+                 (qualified-class-name (cpp-func-impl--get-qualified-class-name node))
                  (comment (cpp-func-impl--format-comment class-name method-name))
                  (impl (concat
                         (when template-text
                           (format "template %s\n" template-text))
-                        (format "%s %s::%s\n{\n" return-value class-name func-text)
+                        (format "%s %s::%s\n{\n" return-value qualified-class-name func-text)
                         (when insert-doc
                             (concat comment "\n"))
                         "}\n")))
