@@ -91,10 +91,6 @@ Argument is the list of nodes for which the names are to be returned."
         (push (cons display node) display-pairs)))
     display-pairs))
 
-
-
-
-
 (defun cpp-func-impl--insert-implementation (template-text implementation comment &optional insert-doc)
   "Inserts the implementation to the buffer given TEMPLATE-TEXT,
 IMPLEMENTATION, COMMENT and optionally INSERT-DOC."
@@ -275,9 +271,6 @@ Returns: `:class-name`, `:method-name`, `:return-type`, `:text`, optionally `:te
                          (treesit-node-text type-node))
           :text (treesit-node-text func-decl)
           :template-param template-text)))
-
-
-
 
 (defun cpp-func-impl--format-comment (class-name method-name)
   "Format the comment string using the different format specifiers.
