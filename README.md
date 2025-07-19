@@ -114,10 +114,14 @@ Following format specifiers are supported:
 
 # Limitations
 
--   Only works in C++ files (not C).
 -   Requires header/source pair to be correctly mapped.
 -   Does not support auto-discovery of already existing method definition.
--   Does not support nested environment.
+
+# TODO
+
+- [x] Nested class environments
+- [ ] Auto discovery of already existing method definition.
+
 
 # License
 
