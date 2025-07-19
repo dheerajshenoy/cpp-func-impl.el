@@ -9,7 +9,7 @@ C++ class methods implementation timesaver.
 - [Installation](#installation)
 - [Usage](#usage)
 - [Customizations](#customizations)
-  - [`cpp-func-impl-comment-string`](#cpp-func-impl-comment-string)
+- [`cpp-func-impl-comment-string`](#cpp-func-impl-comment-string)
 - [Limitations](#limitations)
 - [License](#license)
 - [Contributing](#contributing)
@@ -28,24 +28,27 @@ Templated methods are fully supported.
 
 # Demo
 
-1. Implement function at point
+1. Implement function at point `cpp-func-impl-implement`
 
-    -   Regular functions
+-   Regular functions
 
-    ![img](images/regular.gif)
+![img](images/regular.gif)
 
-    -   Templated functions
+-   Templated functions
 
-    ![img](images/templated.gif)
+![img](images/templated.gif)
 
-2. Implement all methods in a class
+2. Implement all methods from a class `cpp-func-impl-implement-all`
 
-   ![img](images/implement-all.gif)
+![img](images/implement-all.gif)
 
-3. Create concrete class from another class
+3. Implement selected methods from a class `cpp-func-impl-implement-selected`
 
-   ![img](images/concrete-class.gif)
+![img](images/implement-selected.gif)
 
+4. Create concrete class from another class `cpp-func-impl-concrete-class`
+
+![img](images/concrete-class.gif)
 
 # Features
 
@@ -53,7 +56,7 @@ Templated methods are fully supported.
 + Implement function at point
 + Implement concrete class from a given class
 
-> [!NOTE]
+{> [!NOTE]
 > Concrete class are ordinary classes that can be instantiated and have no virtual functions.
 
 # Requirements
@@ -75,8 +78,10 @@ Templated methods are fully supported.
 You have the following functions that can be invoked:
 
 + `cpp-func-impl-implement` - Implements the method at point.
++ `cpp-func-impl-implement-selected` - Implements selected methods from a class.
 + `cpp-func-impl-implement-all` - Implements all the method inside the class (assuming the point is inside the class).
 + `cpp-func-impl-concrete-class` - Creats a concrete class of the class where the point lies inside.
+
 
 If you call the commands with a prefix argument a comment is inserted.
 This comment can be changed by setting the variable
