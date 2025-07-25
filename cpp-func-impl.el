@@ -4,8 +4,8 @@
 
 ;; Author: Dheeraj Vittal Shenoy <dheerajshenoy22@gmail.com>
 ;; Maintainer: Dheeraj Vittal Shenoy <dheerajshenoy22@gmail.com>
-;; Version: 0.1
-;; Package-Requires: ((emacs "29"))
+;; Version: 0.1.1
+;; Package-Requires: ((emacs "29.1"))
 ;; Keywords: convenience, c++, treesitter
 ;; URL: https://github.com/dheerajshenoy/cpp-func-impl.el
 
@@ -30,8 +30,14 @@
 ;; implementations directly from header declarations. It uses Emacs's built-in
 ;; Tree-sitter support to parse C++ syntax trees, allowing it to accurately extract
 ;; the syntax information of the method.
+
+;; The available commands are:
+;; 1. `cpp-func-impl-implement'
+;; 2. `cpp-func-impl-implement-all'
+;; 3. `cpp-func-impl-concrete-class'
 ;;
-;; When invoked (`cpp-func-impl-implement`), the function:
+;; When one of the implement class of functions are called, the following steps are followed:
+;;
 ;;   1. Parses the current buffer to find the method declaration at point.
 ;;   2. Extracts structural information using Tree-sitter nodes.
 ;;   3. Switches to the corresponding implementation (.cpp) file using `ff-find-other-file`.
@@ -40,20 +46,28 @@
 ;;        - The fully qualified method name
 ;;        - An empty function body
 ;;
+;; NOTE: In the case of `cpp-func-impl-implement-all' all of the methods in the class are
+;; implemented
+;;
 ;; This is especially useful in large C++ projects to avoid repetitive typing.
 ;;
 ;; Requirements:
-;; - Emacs 29+ with Tree-sitter enabled
+;; - Emacs 29.1+ with Tree-sitter enabled
 ;; - A properly loaded C++ Tree-sitter grammar
 ;;
-;; Usage: Place cursor on a method declaration inside a class, and
-;;   run: M-x cpp-func-impl-implement or bind it to a key for convenience.
+;; Usage: Place cursor on a method declaration inside a class,
+;;   run: M-x cpp-func-impl-implement to implement the function at point
+;;   run: M-x cpp-func-impl-implement-all with point inside the class to
+;;        implement all the methods inside the class
+;;   run: M-x cpp-func-impl-concrete-class to inherit from given class
+;;        and implement all the virtual methods
 
+;;; Code:
 
-;;; Group
+;;;; Group
 
 (defgroup cpp-func-impl nil
-  "Inserts C++ method implementations from class declarations using Tree-Sitter."
+  "Inserts C++ method implementations from class declarations using treesitter."
   :group 'tools
   :prefix "cpp-func-impl-")
 
@@ -66,6 +80,7 @@ You can use format specifiers in the string to inject method or
 timestamp information automatically.
 
 Format specifiers:
+
 %c - Class name
 %m - Method name
 %d - Current date (YYYY-MM-DD)
@@ -75,12 +90,12 @@ These will be expanded dynamically when the implementation stub is inserted."
   :type 'string
   :group 'cpp-func-impl)
 
-;;; Helper functions
+;;;; Helper functions
 
 (defun cpp-func-impl--get-methods-text (nodes)
   "Returns all the methods' name. Useful for selecting methods.
 
-Argument is the list of nodes for which the names are to be returned."
+Argument is the list of NODES for which the names are to be returned."
   (let ((display-pairs '()))
     (dolist (node nodes)
       (let* ((info (cpp-func-impl--get-decl-info node))
@@ -92,8 +107,10 @@ Argument is the list of nodes for which the names are to be returned."
     display-pairs))
 
 (defun cpp-func-impl--insert-implementation (template-text implementation comment &optional insert-doc)
-  "Inserts the implementation to the buffer given TEMPLATE-TEXT,
-IMPLEMENTATION, COMMENT and optionally INSERT-DOC."
+  "Inserts the implementation to buffer.
+
+This function takes in TEMPLATE-TEXT, IMPLEMENTATION, COMMENT and
+optionally INSERT-DOC."
   (insert "\n")
   (when template-text
     (insert (format "template %s" template-text) "\n"))
@@ -111,9 +128,8 @@ IMPLEMENTATION, COMMENT and optionally INSERT-DOC."
   (let ((names '()))
     (while node
       (when (string= (treesit-node-type node) "class_specifier")
-        (let ((name-node (treesit-node-child-by-field-name node "name")))
-          (when name-node
-            (push (treesit-node-text name-node) names))))
+        (when-let* ((name-node (treesit-node-child-by-field-name node "name")))
+            (push (treesit-node-text name-node) names)))
       (setq node (treesit-node-parent node)))
     (string-join names "::")))
 
@@ -134,12 +150,11 @@ IMPLEMENTATION, COMMENT and optionally INSERT-DOC."
                    t))
            (methods '()))
       (dolist (decl decls)
-        (let* ((func-decl (treesit-search-subtree
-                           decl
-                           (lambda (n)
-                             (string= (treesit-node-type n) "function_declarator")))))
-          (when func-decl
-            (push func-decl methods))))
+        (when-let* ((func-decl (treesit-search-subtree
+                                decl
+                                (lambda (n)
+                                  (string= (treesit-node-type n) "function_declarator")))))
+          (push func-decl methods)))
       (nreverse methods))))
 
 (defun cpp-func-impl--get-virtual-methods ()
@@ -157,18 +172,16 @@ IMPLEMENTATION, COMMENT and optionally INSERT-DOC."
       (dolist (child (treesit-filter-child body #'identity t))
         ;; Look for declarations and template_declarations
         (when (member (treesit-node-type child) '("field_declaration" "template_declaration"))
-          (let ((virtual-node
-                 (treesit-filter-child child
-                                       (lambda (n)
-                                         (string= (treesit-node-type n) "virtual")))))
-            (when virtual-node
-              ;; Get the function_declarator inside this declaration
-              (let ((func-decl
-                     (treesit-search-subtree child
+          (when-let* ((virtual-node
+                       (treesit-filter-child child
                                              (lambda (n)
-                                               (string= (treesit-node-type n) "function_declarator")))))
-                (when func-decl
-                  (push func-decl method-nodes)))))))
+                                               (string= (treesit-node-type n) "virtual")))))
+            ;; Get the function_declarator inside this declaration
+            (when-let* ((func-decl
+                         (treesit-search-subtree child
+                                                 (lambda (n)
+                                                   (string= (treesit-node-type n) "function_declarator")))))
+              (push func-decl method-nodes)))))
       (nreverse method-nodes))))
 
 (defun cpp-func-impl--get-pure-virtual-methods ()
@@ -196,16 +209,15 @@ IMPLEMENTATION, COMMENT and optionally INSERT-DOC."
                                               (string= (treesit-node-text n) "0"))))))
             (when (and has-virtual has-eq-zero)
               (message (treesit-node-text child))
-              (let ((func-decl
-                     (treesit-search-subtree child
-                                             (lambda (n)
-                                               (string= (treesit-node-type n) "function_declarator")))))
-                (when func-decl
-                  (push func-decl method-nodes)))))))
+              (when-let* ((func-decl
+                           (treesit-search-subtree child
+                                                   (lambda (n)
+                                                     (string= (treesit-node-type n) "function_declarator")))))
+                (push func-decl method-nodes))))))
       (nreverse method-nodes))))
 
 (defun cpp-func-impl--get-decl-info (node)
-  "Return plist of info about the C++ method of `node`, supporting template and regular methods.
+  "Return plist of info about the C++ method of `NODE`, supporting template and regular methods.
 Returns: `:class-name`, `:method-name`, `:return-type`, `:text`, optionally `:template-param`."
   (let* (;; Always find the field_declaration first
          (field-decl
@@ -275,7 +287,10 @@ Returns: `:class-name`, `:method-name`, `:return-type`, `:text`, optionally `:te
 (defun cpp-func-impl--format-comment (class-name method-name)
   "Format the comment string using the different format specifiers.
 
+This function takes in CLASS-NAME and METHOD-NAME.
+
 Valid format specifiers are:
+
 %c - Class name
 %m - Method name
 %d - Current date (YYYY-MM-DD)
@@ -293,7 +308,7 @@ Valid format specifiers are:
          ("%t" time)))
      cpp-func-impl-comment-string)))
 
-;;; Interactive functions
+;;;; Interactive functions
 
 ;;;###autoload
 (defun cpp-func-impl-implement (&optional insert-doc)
@@ -506,3 +521,5 @@ comment is added in the body of the function implementation stub."
   (insert "\n" (string-join (nreverse impl-snippets) "\n") "\n")))
 
 (provide 'cpp-func-impl)
+
+;;; cpp-func-impl.el ends here
