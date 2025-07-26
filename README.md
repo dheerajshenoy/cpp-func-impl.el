@@ -61,6 +61,12 @@ Version: 0.1.1
 + Implement function at point
 + Implement selected function(s)
 + Implement concrete class from a given class
++ Skip header-only method declarations from implementation (only in implement all methods command):
+  + `inline`
+  + `constexpr`
+  + `consteval`
+  + `constinit`
++ Skip `delete` and `default` methods (only in implement all methods command)
 
 > [!NOTE]
 > Concrete class are ordinary classes that can be instantiated and have no virtual functions.
