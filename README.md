@@ -33,7 +33,7 @@ Version: 0.1.1
 
 # Demo
 
-1. Implement function at point `cpp-func-impl-implement`
+1. Implement function at point
 
 - Regular functions
 
