@@ -43,15 +43,15 @@ Version: 0.1.1
 
 ![img](images/templated.gif)
 
-2. Implement all methods from a class `cpp-func-impl-implement-all`
+2. Implement all methods from a class
 
 ![img](images/implement-all.gif)
 
-3. Implement selected methods from a class `cpp-func-impl-implement-selected`
+3. Implement selected methods from a class
 
 ![img](images/implement-selected.gif)
 
-4. Create concrete class from another class `cpp-func-impl-concrete-class`
+4. Create concrete class from another class
 
 ![img](images/concrete-class.gif)
 
