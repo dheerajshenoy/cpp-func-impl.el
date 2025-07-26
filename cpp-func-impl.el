@@ -135,31 +135,50 @@ Valid format specifiers:
 ;;; Method Discovery Functions
 
 (defun cpp-func-impl--get-methods (&optional class-node)
-  "Return a list of all method declaration nodes in the class.
+  "Return a list of all non-header-only method declarator nodes in the class.
 
-If CLASS-NODE is provided, search within that class, otherwise
-use the class containing point."
+If CLASS-NODE is provided, get methods from that class, otherwise use
+the class containing point."
   (cpp-func-impl--ensure-cpp-treesit)
   (let ((target-class (or class-node (cpp-func-impl--find-class-node))))
     (unless target-class
       (user-error "Not inside a class declaration"))
 
     (let* ((body (treesit-node-child-by-field-name target-class "body"))
-           (methods '()))
+           (method-nodes '()))
       (when body
-        (let ((decls (treesit-filter-child
-                      body
-                      (lambda (n)
-                        (member (treesit-node-type n)
-                                '("field_declaration" "template_declaration")))
-                      t)))
-          (dolist (decl decls)
-            (when-let* ((func-decl (treesit-search-subtree
-                                    decl
-                                    (lambda (n)
-                                      (string= (treesit-node-type n) "function_declarator")))))
-              (push func-decl methods)))))
-      (nreverse methods))))
+        (dolist (child (treesit-filter-child body #'identity t))
+          (when (member (treesit-node-type child)
+                        '("field_declaration" "template_declaration"))
+
+            ;; Skip inline, constexpr, consteval, constinit methods
+            (unless (treesit-search-subtree
+                     child
+                     (lambda (n)
+                       (and (member (treesit-node-type n)
+                                    '("storage_class_specifier" "type_qualifier"))
+                            (member (treesit-node-text n t)
+                                    '("inline" "constexpr" "consteval" "constinit")))))
+
+              ;; Skip = default or = delete
+              (unless (treesit-search-subtree
+                       child
+                       (lambda (n)
+                         (and (string= (treesit-node-type n) "equals_value_clause")
+                              (let ((text (treesit-node-text n t)))
+                                (or (string-match-p "= *default" text)
+                                    (string-match-p "= *delete" text))))))
+
+                ;; Collect function_declarator
+                (when-let* ((func-decl
+                            (treesit-search-subtree child
+                                                    (lambda (n)
+                                                      (string= (treesit-node-type n)
+                                                               "function_declarator")))))
+                  (push func-decl method-nodes)))))))
+      (nreverse method-nodes))))
+
+
 
 (defun cpp-func-impl--get-virtual-methods (&optional class-node)
   "Return a list of all virtual method declarator nodes in the class.
