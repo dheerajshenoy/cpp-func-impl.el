@@ -34,6 +34,7 @@
 ;; The available commands are:
 ;; 1. `cpp-func-impl-implement'
 ;; 2. `cpp-func-impl-implement-all'
+;; 3. `cpp-func-impl-implement-selected'
 ;; 3. `cpp-func-impl-concrete-class'
 ;;
 ;; When one of the implement class of functions are called, the following steps are followed:
@@ -59,6 +60,8 @@
 ;;   run: M-x cpp-func-impl-implement to implement the function at point
 ;;   run: M-x cpp-func-impl-implement-all with point inside the class to
 ;;        implement all the methods inside the class
+;;   run: M-x cpp-func-impl-implement-selected presents list of functions
+;;        which can be selected to implement
 ;;   run: M-x cpp-func-impl-concrete-class to inherit from given class
 ;;        and implement all the virtual methods
 
