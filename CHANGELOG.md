@@ -3,7 +3,14 @@
 ## 0.1.1
 
 - Handle `final`, `override` specifiers in method implementation
-
+- Type specifier awareness (`constexpr`, `const`).
+- Handle nested classes properly.
+- Skip implementing header-bound declarations:
+    + `inline`
+    + `constexpr`
+    + `consteval`
+    + `constinit`
+- Skip `default` and `delete` declarations
 
 ## 0.1
 
