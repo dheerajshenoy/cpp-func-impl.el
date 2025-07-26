@@ -406,7 +406,7 @@ for this command to work."
         ;; Insert the generated class definition
         (goto-char (point-max))
         (let ((beg (point)))
-          (insert (format "\nclass %s : public %s\n{\npublic:\n"
+          (insert (format "\nclass %s : public %s {\npublic:\n"
                           concrete-class-name base-class-name))
           (insert (string-join (nreverse impl-snippets) "\n"))
           (insert "\n};\n")
