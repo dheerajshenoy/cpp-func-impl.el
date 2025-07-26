@@ -106,6 +106,7 @@ Argument is the list of NODES for which the names are to be returned."
              (ret (plist-get info :return-type))
              (sig (plist-get info :text))
              (display (format "%s %s::%s" ret qualified-class-name sig)))
+        (message "SIG: %s" sig)
         (push (cons display node) display-pairs)))
     display-pairs))
 
@@ -118,11 +119,7 @@ present inserts a comment in the body of the method implementations. The
 comment string can be customized using `cpp-func-impl-comment-string'."
   (let* ((class-name (plist-get decl :class-name))
          (method-name (plist-get decl :method-name))
-         (text (string-trim (replace-regexp-in-string
-                             "[ \t]+" " "
-                             (replace-regexp-in-string
-                              "\\b\\(override\\|final\\)\\b" ""
-                             (plist-get decl :text)))))
+         (text (cpp-func-impl--trim-virtual-specifiers (plist-get decl :text)))
          (return-type (plist-get decl :return-type))
          (template-text (plist-get decl :template-param))
          (qualified-class-name (cpp-func-impl--get-qualified-class-name (treesit-node-at (point))))
@@ -145,7 +142,6 @@ comment string can be customized using `cpp-func-impl-comment-string'."
              class-name
              (if template-text " (template)" ""))))
 
-
 (defun cpp-func-impl--get-qualified-class-name (node)
   "Walks up the AST from NODE to collect nested class names."
   (let ((names '()))
@@ -157,7 +153,9 @@ comment string can be customized using `cpp-func-impl-comment-string'."
     (string-join names "::")))
 
 (defun cpp-func-impl--get-methods ()
-  "Returns a list of all method nodes in the class at point using Tree-sitter."
+  "Returns a list of all method declaration nodes in the class.
+
+This function returns the list of `field_declaration` nodes that are methods."
   (let* ((node (treesit-node-at (point)))
          (class-node (treesit-parent-until node
                                            (lambda (n)
@@ -238,6 +236,14 @@ comment string can be customized using `cpp-func-impl-comment-string'."
                                                      (string= (treesit-node-type n) "function_declarator")))))
                 (push func-decl method-nodes))))))
       (nreverse method-nodes))))
+
+(defun cpp-func-impl--trim-virtual-specifiers (text)
+  "Removes the 'final', 'override' keywords from the given TEXT."
+  (string-trim (replace-regexp-in-string
+                "[ \t]+" " "
+                (replace-regexp-in-string
+                 "\\b\\(override\\|final\\)\\b" ""
+                 text))))
 
 (defun cpp-func-impl--get-decl-info (node)
   "Return plist of info about the C++ method of `NODE`, supporting template and regular methods.
@@ -444,7 +450,7 @@ comment is added in the body of the function implementation stub."
               (let* ((node-info (cpp-func-impl--get-decl-info node))
                      (method-name (plist-get node-info :method-name))
                      (class-name (plist-get node-info :class-name))
-                     (func-text (plist-get node-info :text))
+                     (text (cpp-func-impl--trim-virtual-specifiers (plist-get node-info :text)))
                      (return-value (plist-get node-info :return-type))
                      (template-text (plist-get node-info :template-param))
                      (qualified-class-name (cpp-func-impl--get-qualified-class-name node))
@@ -452,12 +458,14 @@ comment is added in the body of the function implementation stub."
                      (impl (concat
                             (when template-text
                               (format "template %s\n" template-text))
-                            (format "%s %s::%s\n{\n" return-value qualified-class-name func-text)
+                            (format "%s %s::%s"
+                                    return-value
+                                    qualified-class-name
+                                    text)
                             (if insert-doc
-                                (concat comment "\n")
-                              "")
-                            "}\n")))
-                (push impl impl-snippets))
+                                (format "\n{\n%s\n}" comment)
+                              "\n{}\n"))))
+            (push impl impl-snippets))
             (error
              (message "Skipped method: %s" (error-message-string err))))))
 
@@ -469,66 +477,37 @@ comment is added in the body of the function implementation stub."
 
 ;;;###autoload
 (defun cpp-func-impl-implement-selected (&optional insert-doc)
-  "Implements selected C++ methds of given class in the corresponding source file.
+  "Implements selected C++ methods of the current class in the corresponding source file.
 
-This function should be called with point inside C++ class with atleast
-one method declaration. It uses Tree-sitter to extract the class
-name, method name, return type, and any associated template parameters,
-then generates a skeleton implementation in the corresponding .cpp file.
+This function should be called with point inside a C++ class that has at least
+one method declaration. It uses Tree-sitter to extract method info and generate
+skeleton implementations, appended to the corresponding .cpp file.
 
-The implementation is appended at the end of the .cpp file, with correct
-namespace qualification and template declarations (if applicable).
+If called with a prefix argument INSERT-DOC (\\[universal-argument]), a comment
+placeholder will be inserted inside the function body. The comment can be customized
+via `cpp-func-impl-default-comment`."
 
-If called with a prefix argument INSERT-DOC (\\[universal-argument]), a
-comment placeholder will be inserted inside the function body. The
-comment text can be customized via the `cpp-func-impl-default-comment`
-variable.
-
-NOTE: Nested namespace and class may not work.
-
-Note: Tree-sitter support for C++ must be enabled in the current buffer
-for this command to work.
-
-If called with a prefix (\\[universal-argument]]) (INSERT-DOC), a
-comment is added in the body of the function implementation stub."
-  (interactive)
+  (interactive "P")
   (let* ((func-nodes (cpp-func-impl--get-methods))
          (node-sigs (cpp-func-impl--get-methods-text func-nodes))
+         ;; Override crm-separator to avoid breaking signatures with commas
+         (crm-separator ";")
          (choices (mapcar #'car node-sigs))
-         (selected (completing-read-multiple "Select methods to implement: "
-                                             choices nil t))
-         (selected-nodes (mapcar (lambda (disp)
-                                   (cdr (assoc disp node-sigs)))
-                                 selected))
-         (impl-snippets '()))
+         (selected (completing-read-multiple
+                    "Select methods: "
+                    choices nil t)))
 
-    ;; Collect all implementations
-    (dolist (node selected-nodes)
-      (condition-case err
-          (let* ((node-info (cpp-func-impl--get-decl-info node))
-                 (method-name (plist-get node-info :method-name))
-                 (class-name (plist-get node-info :class-name))
-                 (func-text (plist-get node-info :text))
-                 (return-value (plist-get node-info :return-type))
-                 (template-text (plist-get node-info :template-param))
-                 (qualified-class-name (cpp-func-impl--get-qualified-class-name node))
-                 (comment (cpp-func-impl--format-comment class-name method-name))
-                 (impl (concat
-                        (when template-text
-                          (format "template %s\n" template-text))
-                        (format "%s %s::%s\n{\n" return-value qualified-class-name func-text)
-                        (when insert-doc
-                            (concat comment "\n"))
-                        "}\n")))
-            (push impl impl-snippets))
-        (error
-         (message "Skipped method: %s" (error-message-string err)))))
+    (ff-find-other-file) ;; Jump to .cpp
+    (goto-char (point-max)) ;; Append to end of file
 
-  ;; Insert all at once
-  (ff-find-other-file)
-  (goto-char (point-max))
-  (message "Inserted %d method implementations." (length impl-snippets))
-  (insert "\n" (string-join (nreverse impl-snippets) "\n") "\n")))
+    (dolist (display selected)
+      (let ((node (cdr (assoc-string display node-sigs))))
+        (unless node
+          (user-error "Couldn't find node for method: %s" display))
+        (let ((info (cpp-func-impl--get-decl-info node)))
+          (cpp-func-impl--insert-implementation info insert-doc)
+          (insert "\n")))))) ;; Add spacing between implementations
+
 
 (provide 'cpp-func-impl)
 
