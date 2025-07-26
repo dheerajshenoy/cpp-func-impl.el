@@ -459,14 +459,15 @@ placeholders will be inserted inside function bodies."
 
 ;;;###autoload
   (defun cpp-func-impl-implement-selected (&optional insert-doc)
-    "Implement selected C++ methods of the current class in the corresponding source file.
+    "Implement selected C++ methods of the current class in the
+corresponding source file.
 
-This function should be called with point inside a C++ class that has at least
-one method declaration. It presents a list of methods for selection and generates
-skeleton implementations for the chosen methods.
+This function should be called with point inside a C++ class that has at
+least one method declaration. It presents a list of methods for
+selection and generates skeleton implementations for the chosen methods.
 
-If called with a prefix argument INSERT-DOC (\\[universal-argument]), comment
-placeholders will be inserted inside function bodies."
+If called with a prefix argument INSERT-DOC (\\[universal-argument]),
+comment placeholders will be inserted inside function bodies."
     (interactive "P")
     (cpp-func-impl--ensure-cpp-treesit)
     (let* ((func-nodes (cpp-func-impl--get-methods))
@@ -504,7 +505,8 @@ placeholders will be inserted inside function bodies."
 
 ;;;###autoload
 (defun cpp-func-impl-concrete-class ()
-  "Generate a concrete C++ class implementing all pure virtual methods from the class at point."
+  "Generate a concrete C++ class implementing all pure virtual methods
+from the class at point."
   (interactive)
   (cpp-func-impl--ensure-cpp-treesit)
   (let* ((virtual-nodes (cpp-func-impl--get-pure-virtual-methods)))
