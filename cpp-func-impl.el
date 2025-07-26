@@ -5,7 +5,7 @@
 ;; Author: Dheeraj Vittal Shenoy <dheerajshenoy22@gmail.com>
 ;; Maintainer: Dheeraj Vittal Shenoy <dheerajshenoy22@gmail.com>
 ;; URL: https://github.com/dheerajshenoy/cpp-func-impl.el
-;; Version: 0.1.2
+;; Version: 0.1.1
 ;; Package-Requires: ((emacs "29.1"))
 ;; Keywords: c++, tools, treesitter
 ;;
