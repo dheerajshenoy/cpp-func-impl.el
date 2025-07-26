@@ -123,7 +123,7 @@ Valid format specifiers:
      cpp-func-impl-comment-string)))
 
 (defun cpp-func-impl--trim-virtual-specifiers (text)
-  "Remove 'final', 'override' keywords from TEXT."
+  "Remove final, override keywords from TEXT."
   (when text
     (string-trim
      (replace-regexp-in-string
@@ -520,7 +520,7 @@ placeholders will be inserted inside function bodies."
         (dolist (node virtual-nodes)
           (condition-case err
               (let* ((node-info (cpp-func-impl--get-decl-info node))
-                     (method-name (plist-get node-info :method-name))
+                     ;; (method-name (plist-get node-info :method-name))
                      (func-text (cpp-func-impl--trim-virtual-specifiers
                                  (plist-get node-info :text)))
                      (return-type (plist-get node-info :return-type))
@@ -530,8 +530,8 @@ placeholders will be inserted inside function bodies."
                 (push
                  (concat
                   (when template-text
-                    (format "    template %s\n" template-text))
-                  (format "    %s %s override;"
+                    (format " template %s\n" template-text))
+                  (format " %s %s override;"
                           return-type func-text))
                  impl-snippets))
             (error
