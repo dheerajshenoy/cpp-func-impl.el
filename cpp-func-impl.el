@@ -119,8 +119,10 @@ comment string can be customized using `cpp-func-impl-comment-string'."
   (let* ((class-name (plist-get decl :class-name))
          (method-name (plist-get decl :method-name))
          (text (string-trim (replace-regexp-in-string
-                             "\\b\\(override\\|final\\)\\b" ""
-                             (plist-get decl :text))))
+                             "[ \t]+" " "
+                             (replace-regexp-in-string
+                              "\\b\\(override\\|final\\)\\b" ""
+                             (plist-get decl :text)))))
          (return-type (plist-get decl :return-type))
          (template-text (plist-get decl :template-param))
          (qualified-class-name (cpp-func-impl--get-qualified-class-name (treesit-node-at (point))))
