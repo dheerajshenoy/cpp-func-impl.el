@@ -178,8 +178,6 @@ the class containing point."
                   (push func-decl method-nodes)))))))
       (nreverse method-nodes))))
 
-
-
 (defun cpp-func-impl--get-virtual-methods (&optional class-node)
   "Return a list of all virtual method declarator nodes in the class.
 
@@ -229,9 +227,10 @@ If CLASS-NODE is provided, get pure virtual methods from the class."
                                                   (string= (treesit-node-text n) "0"))))))
               (when (and has-virtual has-eq-zero)
                 (when-let* ((func-decl
-                             (treesit-search-subtree child
-                                                     (lambda (n)
-                                                       (string= (treesit-node-type n) "function_declarator")))))
+                             (treesit-search-subtree
+                              child
+                              (lambda (n)
+                                (string= (treesit-node-type n) "function_declarator")))))
                   (push func-decl method-nodes)))))))
       (nreverse method-nodes))))
 
@@ -450,16 +449,17 @@ placeholders will be inserted inside function bodies."
           (total-count (length func-nodes)))
       (dolist (node func-nodes)
         (condition-case err
-            (cpp-func-impl--insert-implementation node insert-doc)
-          (setq success-count (1+ success-count))
+            (progn
+              (cpp-func-impl--insert-implementation node insert-doc)
+              (setq success-count (1+ success-count)))
           (error
            (message "Skipped method: %s" (error-message-string err)))))
 
       (message "Implemented %d/%d methods successfully" success-count total-count))))
 
 ;;;###autoload
-  (defun cpp-func-impl-implement-selected (&optional insert-doc)
-    "Implement selected C++ methods of the current class in the
+(defun cpp-func-impl-implement-selected (&optional insert-doc)
+  "Implement selected C++ methods of the current class in the
 corresponding source file.
 
 This function should be called with point inside a C++ class that has at
@@ -468,36 +468,37 @@ selection and generates skeleton implementations for the chosen methods.
 
 If called with a prefix argument INSERT-DOC (\\[universal-argument]),
 comment placeholders will be inserted inside function bodies."
-    (interactive "P")
-    (cpp-func-impl--ensure-cpp-treesit)
-    (let* ((func-nodes (cpp-func-impl--get-methods))
-           (node-sigs (cpp-func-impl--get-methods-text func-nodes)))
+  (interactive "P")
+  (cpp-func-impl--ensure-cpp-treesit)
+  (let* ((func-nodes (cpp-func-impl--get-methods))
+         (node-sigs (cpp-func-impl--get-methods-text func-nodes)))
 
-      (unless node-sigs
-        (user-error "No method declarations found in class"))
+    (unless node-sigs
+      (user-error "No method declarations found in class"))
 
-      (let* (;; Override crm-separator to avoid breaking signatures with commas
-             (crm-separator ";")
-             (choices (mapcar #'car node-sigs))
-             (selected (completing-read-multiple
-                        "Select methods (separate with ;): "
-                        choices nil t)))
+    (let* (;; Override crm-separator to avoid breaking signatures with commas
+           (crm-separator ";")
+           (choices (mapcar #'car node-sigs))
+           (selected (completing-read-multiple
+                      "Select methods (separate with ;): "
+                      choices nil t)))
 
-        (unless selected
-          (user-error "No methods selected"))
+      (unless selected
+        (user-error "No methods selected"))
 
-        (ff-find-other-file) ;; Jump to .cpp
-        (goto-char (point-max)) ;; Append to end of file
+      (ff-find-other-file) ;; Jump to .cpp
+      (goto-char (point-max)) ;; Append to end of file
 
-        (let ((success-count 0))
-          (dolist (display selected)
-            (let ((node (cdr (assoc-string display node-sigs))))
-              (if node
-                  (condition-case err
+      (let ((success-count 0))
+        (dolist (display selected)
+          (let ((node (cdr (assoc-string display node-sigs))))
+            (if node
+                (condition-case err
+                    (progn
                       (cpp-func-impl--insert-implementation node insert-doc)
-                    (setq success-count (1+ success-count))
-                    (error
-                     (message "Failed to implement %s: %s" display (error-message-string err))))
+                      (setq success-count (1+ success-count)))
+                  (error
+                   (message "Failed to implement %s: %s" display (error-message-string err))))
               (message "Warning: Couldn't find node for method: %s" display))))
 
         (message "Implemented %d/%d selected methods successfully"
