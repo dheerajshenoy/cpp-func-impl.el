@@ -83,7 +83,7 @@ Use VC with use-package
 
 ```elisp
 (use-package cpp-func-impl
-    ;; :vc (cpp-func-impl :url "https://github.com/dheerajshenoy/cpp-func-impl")
+    :vc (cpp-func-impl :url "https://github.com/dheerajshenoy/cpp-func-impl")
     :commands (cpp-func-impl-implement cpp-func-impl-implement-all cpp-func-impl-concrete-class)
     :custom
     (cpp-func-impl-comment-string "// TODO: `%m` `%d` `%t` `%c`"))
