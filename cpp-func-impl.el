@@ -109,22 +109,40 @@ Argument is the list of NODES for which the names are to be returned."
         (push (cons display node) display-pairs)))
     display-pairs))
 
-(defun cpp-func-impl--insert-implementation (template-text implementation comment &optional insert-doc)
+(defun cpp-func-impl--insert-implementation (decl &optional insert-doc)
   "Inserts the implementation to buffer.
 
-This function takes in TEMPLATE-TEXT, IMPLEMENTATION, COMMENT and
-optionally INSERT-DOC."
-  (insert "\n")
-  (when template-text
-    (insert (format "template %s" template-text) "\n"))
-  (insert implementation "\n{\n")
-  (if insert-doc
-      (progn
-        (insert comment)
-        (indent-region (line-beginning-position) (line-end-position))
-        (insert "\n"))
-    (insert "\n"))
-  (insert "}\n"))
+This function requires DECLARATION which is returned from
+`cpp-func-impl--get-decl-info' and optionally INSERT-DOC which if
+present inserts a comment in the body of the method implementations. The
+comment string can be customized using `cpp-func-impl-comment-string'."
+  (let* ((class-name (plist-get decl :class-name))
+         (method-name (plist-get decl :method-name))
+         (text (string-trim (replace-regexp-in-string
+                             "\\b\\(override\\|final\\)\\b" ""
+                             (plist-get decl :text))))
+         (return-type (plist-get decl :return-type))
+         (template-text (plist-get decl :template-param))
+         (qualified-class-name (cpp-func-impl--get-qualified-class-name (treesit-node-at (point))))
+         (impl (format "%s %s::%s"
+                       return-type class-name text))
+         (comment (cpp-func-impl--format-comment class-name method-name)))
+    (insert "\n")
+    (when template-text
+      (insert (format "template %s" template-text) "\n"))
+    (insert impl "\n{\n")
+    (if insert-doc
+        (progn
+          (insert comment)
+          (indent-region (line-beginning-position) (line-end-position))
+          (insert "\n"))
+      (insert "\n"))
+    (insert "}\n")
+    (message "Inserted method %s for class %s%s"
+             method-name
+             class-name
+             (if template-text " (template)" ""))))
+
 
 (defun cpp-func-impl--get-qualified-class-name (node)
   "Walks up the AST from NODE to collect nested class names."
@@ -333,16 +351,7 @@ variable.
 Note: Tree-sitter support for C++ must be enabled in the current buffer
 for this command to work."
   (interactive "P")
-  (let* ((info (cpp-func-impl--get-decl-info (treesit-node-at (point))))
-         (class-name (plist-get info :class-name))
-         (method-name (plist-get info :method-name))
-         (text (plist-get info :text))
-         (return-type (plist-get info :return-type))
-         (template-text (plist-get info :template-param))
-         (qualified-class-name (cpp-func-impl--get-qualified-class-name (treesit-node-at (point))))
-         (impl (format "%s %s::%s"
-                       return-type qualified-class-name text))
-         (comment (cpp-func-impl--format-comment class-name method-name)))
+  (let ((decl (cpp-func-impl--get-decl-info (treesit-node-at (point)))))
 
     ;; Jump to the corresponding .cpp file
     (ff-find-other-file)
@@ -351,15 +360,11 @@ for this command to work."
     (goto-char (point-max))
 
     ;; Insert implementation
-    (cpp-func-impl--insert-implementation template-text impl comment)
+    (cpp-func-impl--insert-implementation decl)
 
     ;; Move cursor inside the function body
     (forward-line -2)
-
-    (message "Inserted method %s for class %s%s"
-             method-name
-             class-name
-             (if template-text " (template)" ""))))
+    ))
 
 ;;;###autoload
 (defun cpp-func-impl-concrete-class ()
