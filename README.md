@@ -16,11 +16,16 @@ C++ class methods implementation timesaver.
 
 # Overview
 
-This Emacs package provides a utility to generate out-of-line method implementations for C++ classes. It leverages [Tree Sitter](https:tree-sitter.github.io/tree-sitter/) for accurate parsing of C++ declarations directly from header files.
+This Emacs package provides a utility to generate out-of-line method implementations for C++ classes.
+It leverages [Tree Sitter](https:tree-sitter.github.io/tree-sitter/) for accurate parsing of C++ declarations
+directly from header files.
 
-Place your cursor on a C++ method declaration inside a header file, run the command, and the function body will be automatically generated and inserted in the corresponding source (.cpp) file.
+Place your cursor on a C++ method declaration inside a header file, run the command,
+and the function body will be automatically generated and inserted in the corresponding source (.cpp) file.
 
 Templated methods are fully supported.
+
+Version: 0.1.1
 
 > [!CAUTION]
 > I am new to Emacs Lisp and this plugin is still in early stages and it might not work all the time.
@@ -30,11 +35,11 @@ Templated methods are fully supported.
 
 1. Implement function at point `cpp-func-impl-implement`
 
--   Regular functions
+- Regular functions
 
 ![img](images/regular.gif)
 
--   Templated functions
+- Templated functions
 
 ![img](images/templated.gif)
 
@@ -54,6 +59,7 @@ Templated methods are fully supported.
 
 + Implement all the methods in a class
 + Implement function at point
++ Implement selected function(s)
 + Implement concrete class from a given class
 
 > [!NOTE]
@@ -131,6 +137,10 @@ Following format specifiers are supported:
 
 -   Requires header/source pair to be correctly mapped.
 -   Does not support auto-discovery of already existing method definition.
+
+# Changelog
+
+Check [CHANGELOG.md](./CHANGELOG.md)
 
 # TODO
 
