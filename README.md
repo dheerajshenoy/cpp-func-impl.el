@@ -146,7 +146,11 @@ Check [CHANGELOG.md](./CHANGELOG.md)
 
 - [x] Nested class environments
 - [ ] Auto discovery of already existing method definition.
-
+- [x] Type qualifier awareness
+- [x] Virtual qualifier awareness
+- [x] disable implementing header-only methods
+- [x] disable implementing `default` and `delete` methods
+- [ ] Complex class
 
 # License
 
