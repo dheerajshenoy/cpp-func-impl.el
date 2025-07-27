@@ -1,6 +1,6 @@
 ;;; cpp-func-impl.el --- Generate C++ method implementations from declarations -*- lexical-binding: t; -*-
 ;;
-;; Copyright (C) 2025 Free Software Foundation, Inc.
+;; Copyright (C) 2025 Dheeraj Vittal Shenoy
 ;;
 ;; Author: Dheeraj Vittal Shenoy <dheerajshenoy22@gmail.com>
 ;; Maintainer: Dheeraj Vittal Shenoy <dheerajshenoy22@gmail.com>
@@ -32,7 +32,8 @@
 (defgroup cpp-func-impl nil
   "Generate C++ method implementations from class declarations using tree-sitter."
   :group 'tools
-  :prefix "cpp-func-impl-")
+  :prefix "cpp-func-impl-"
+  :version "0.1.1")
 
 (defcustom cpp-func-impl-comment-string "// TODO: implement `%m`"
   "Comment inserted in the function body.
@@ -459,8 +460,7 @@ placeholders will be inserted inside function bodies."
 
 ;;;###autoload
 (defun cpp-func-impl-implement-selected (&optional insert-doc)
-  "Implement selected C++ methods of the current class in the
-corresponding source file.
+  "Implement selected methods of the class.
 
 This function should be called with point inside a C++ class that has at
 least one method declaration. It presents a list of methods for
@@ -506,8 +506,10 @@ comment placeholders will be inserted inside function bodies."
 
 ;;;###autoload
 (defun cpp-func-impl-concrete-class ()
-  "Generate a concrete C++ class implementing all pure virtual methods
-from the class at point."
+  "Generate a concrete class from the class at point.
+
+Concrete class is the class that implements all pure virtual methods of
+another class."
   (interactive)
   (cpp-func-impl--ensure-cpp-treesit)
   (let* ((virtual-nodes (cpp-func-impl--get-pure-virtual-methods)))
