@@ -55,7 +55,7 @@ Version: 0.1.2
 
 ![img](images/highlight.gif)
 
-4. Create concrete class from another class
+5. Create concrete class from another class
 
 ![img](images/concrete-class.gif)
 
