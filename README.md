@@ -25,7 +25,7 @@ and the function body will be automatically generated and inserted in the corres
 
 Templated methods are fully supported.
 
-Version: 0.1.1
+Version: 0.1.2
 
 > [!CAUTION]
 > I am new to Emacs Lisp and this plugin is still in early stages and it might not work all the time.
@@ -84,7 +84,13 @@ Use VC with use-package
 ```elisp
 (use-package cpp-func-impl
     :vc (cpp-func-impl :url "https://github.com/dheerajshenoy/cpp-func-impl")
-    :commands (cpp-func-impl-implement cpp-func-impl-implement-all cpp-func-impl-concrete-class)
+    :commands
+    (cpp-func-impl-implement
+    cpp-func-impl-implement-all
+    cpp-func-impl-implement-selected
+    cpp-func-impl-implement-region
+    cpp-func-impl-implement-dwim
+    cpp-func-impl-concrete-class)
     :custom
     (cpp-func-impl-comment-string "// TODO: `%m` `%d` `%t` `%c`"))
 ```
@@ -94,7 +100,13 @@ or clone the repo and load it manually
 ```elisp
 (use-package cpp-func-impl
     :load-path "<path-to-cloned-directory>"
-    :commands (cpp-func-impl-implement cpp-func-impl-implement-all cpp-func-impl-concrete-class)
+    :commands
+    (cpp-func-impl-implement
+    cpp-func-impl-implement-all
+    cpp-func-impl-implement-selected
+    cpp-func-impl-implement-region
+    cpp-func-impl-implement-dwim
+    cpp-func-impl-concrete-class)
     :custom
     (cpp-func-impl-comment-string "// TODO: `%m` `%d` `%t` `%c`"))
 ```
@@ -107,6 +119,8 @@ You have the following functions that can be invoked:
 + `cpp-func-impl-implement` - Implements the method at point.
 + `cpp-func-impl-implement-selected` - Implements selected methods from a class.
 + `cpp-func-impl-implement-all` - Implements all the method inside the class (assuming the point is inside the class).
++ `cpp-func-impl-implement-region` - Implements all methods inside the region.
++ `cpp-func-impl-implement-dwim` - Implements methods in a DWIM fashion.
 + `cpp-func-impl-concrete-class` - Creats a concrete class of the class where the point lies inside.
 
 
@@ -131,17 +145,14 @@ Following format specifiers are supported:
 | %t               | Current Time |
 | %d               | Current Date |
 
+Example:
+
 ```elisp
-(use-package cpp-func-impl
-  :ensure nil
-  :load-path "<load-path>"
-  :custom
-  (cpp-func-impl-comment-string "// TODO: Implement `%m` for the class `%c. Added at `%t` on `%d`"))
+  (setopt cpp-func-impl-comment-string "// TODO: Implement `%m` for the class `%c. Added at `%t` on `%d`")
 ```
 
 # Limitations
 
--   Requires header/source pair to be correctly mapped.
 -   Does not support auto-discovery of already existing method definition.
 
 # Changelog
@@ -157,6 +168,7 @@ Check [CHANGELOG.md](./CHANGELOG.md)
 - [x] disable implementing header-only methods
 - [x] disable implementing `default` and `delete` methods
 - [ ] Complex class
+- [x] Region highlight implement
 
 # License
 
