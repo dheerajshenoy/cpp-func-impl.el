@@ -51,6 +51,10 @@ Version: 0.1.2
 
 ![img](images/implement-selected.gif)
 
+4. Implement methods from highlighted region
+
+![img](images/highlight.gif)
+
 4. Create concrete class from another class
 
 ![img](images/concrete-class.gif)
@@ -60,6 +64,7 @@ Version: 0.1.2
 + Implement all the methods in a class
 + Implement function at point
 + Implement selected function(s)
++ Implement methods from highlighted region
 + Implement concrete class from a given class
 + Skip header-only method declarations from implementation (only in implement all methods command):
   + `inline`
@@ -112,16 +117,27 @@ or clone the repo and load it manually
 ```
 
 
-# Usage
+# Commands
 
-You have the following functions that can be invoked:
+You have the following commands that can be invoked:
 
 + `cpp-func-impl-implement` - Implements the method at point.
 + `cpp-func-impl-implement-selected` - Implements selected methods from a class.
 + `cpp-func-impl-implement-all` - Implements all the method inside the class (assuming the point is inside the class).
 + `cpp-func-impl-implement-region` - Implements all methods inside the region.
-+ `cpp-func-impl-implement-dwim` - Implements methods in a DWIM fashion.
+
+    > [!NOTE]
+    > when using `cpp-func-impl-implement-region` make sure that the highlighted region contains
+    > methods from one class/struct only. Otherwise it may lead to unexpected function
+    > implementations.
+
++ `cpp-func-impl-implement-dwim` - Implements methods in a DWIM (do what I mean) fashion.
+
+    If there is active highlight region, then implement methods from the highlighted region,
+    else implement the method at point.
+
 + `cpp-func-impl-concrete-class` - Creats a concrete class of the class where the point lies inside.
+
 
 
 If you call the commands with a prefix argument a comment is inserted.
