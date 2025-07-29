@@ -5,7 +5,7 @@
 ;; Author: Dheeraj Vittal Shenoy <dheerajshenoy22@gmail.com>
 ;; Maintainer: Dheeraj Vittal Shenoy <dheerajshenoy22@gmail.com>
 ;; URL: https://github.com/dheerajshenoy/cpp-func-impl.el
-;; Version: 0.1.1
+;; Version: 0.1.2
 ;; Package-Requires: ((emacs "29.1"))
 ;; Keywords: c++, tools, treesitter
 
@@ -33,6 +33,7 @@
 ;; - Single method implementation
 ;; - All methods implementation
 ;; - Selected methods implementation
+;; - Highlighted region implementation
 ;; - Pure virtual method concrete class generation
 ;; - Template methods
 ;; - Nested classes
@@ -48,7 +49,7 @@
   "Generate C++ method implementations from class declarations using tree-sitter."
   :group 'tools
   :prefix "cpp-func-impl-"
-  :version "0.1.1")
+  :version "0.1.2")
 
 (defcustom cpp-func-impl-comment-string "// TODO: implement `%m`"
   "Comment inserted in the function body.
@@ -138,6 +139,14 @@ Valid format specifiers:
          (_ match)))
      cpp-func-impl-comment-string)))
 
+;; (defun cpp-func-impl--get-methods-in-region ()
+;;   "Returns the list of method nodes inside active region.
+;;
+;; If the active region does not have any method or template notes then returns nil."
+;;   (let ((start (region-beginning))
+;;         (end (region-end)))
+;;     (
+
 (defun cpp-func-impl--trim-virtual-specifiers (text)
   "Remove final, override keywords from TEXT."
   (when text
@@ -193,6 +202,46 @@ the class containing point."
                                                                "function_declarator")))))
                   (push func-decl method-nodes)))))))
       (nreverse method-nodes))))
+
+(defun cpp-func-impl--get-methods-in-region (start end)
+  "Return a list of non-header-only method declarator nodes inside the region from START to END."
+  (cpp-func-impl--ensure-cpp-treesit)
+  (let* ((root (treesit-buffer-root-node))
+         (method-nodes '()))
+    ;; Collect all relevant declarations in region
+    (dolist (node (treesit-query-capture
+                   root
+                   '((field_declaration) @decl
+                     (template_declaration
+                      (declaration) @decl))
+                   start end
+                   t))
+      ;; Skip inline, constexpr, etc.
+      (unless (treesit-search-subtree
+               node
+               (lambda (n)
+                 (and (member (treesit-node-type n)
+                              '("storage_class_specifier" "type_qualifier"))
+                      (member (treesit-node-text n t)
+                              '("inline" "constexpr" "consteval" "constinit")))))
+
+        ;; Skip = default or = delete
+        (unless (treesit-search-subtree
+                 node
+                 (lambda (n)
+                   (and (string= (treesit-node-type n) "equals_value_clause")
+                        (let ((text (treesit-node-text n t)))
+                          (or (string-match-p "= *default" text)
+                              (string-match-p "= *delete" text))))))
+
+          ;; Extract function_declarator if it's present
+          (when-let* ((func-decl
+                       (treesit-search-subtree node
+                                               (lambda (n)
+                                                 (string= (treesit-node-type n)
+                                                          "function_declarator")))))
+            (push func-decl method-nodes)))))
+    (nreverse method-nodes)))
 
 (defun cpp-func-impl--get-virtual-methods (&optional class-node)
   "Return a list of all virtual method declarator nodes in the class.
@@ -287,6 +336,10 @@ function_declaration node obtained from tree-sitter."
           (concat (string-join (nreverse qualifiers) " ") " "))
         base
         suffix)))))
+
+
+
+
 
 (defun cpp-func-impl--get-decl-info (node)
   "Return plist of info about the C++ method NODE.
@@ -518,6 +571,55 @@ comment placeholders will be inserted inside function bodies."
 
         (message "Implemented %d/%d selected methods successfully"
                  success-count (length selected))))))
+;;;###autoload
+(defun cpp-func-impl-implement-region (&optional insert-doc)
+  "Implement all C++ method declarations in the active region.
+
+NOTE: The selection region should not contain method declarations from a
+single class or struct. Uses Tree-sitter to identify method declarations
+and inserts their corresponding skeleton definitions in the appropriate
+source file.
+
+If INSERT-DOC is non-nil (interactively via prefix argument
+\\[universal-argument]), add a comment placeholder inside each function
+body for documentation purpose
+
+Avoid selecting nested class or struct declarations inside the region as
+it may lead to unexpected implementations."
+  (interactive "P")
+  (cpp-func-impl--ensure-cpp-treesit)
+  (unless (use-region-p)
+    (user-error "No region selected"))
+
+  (let* ((start (region-beginning))
+         (end (region-end))
+         (decl-nodes (cpp-func-impl--get-methods-in-region start end)))
+    (unless decl-nodes
+      (user-error "No method declarations found in region"))
+
+    ;; Switch to .cpp file
+    (ff-find-other-file)
+    (goto-char (point-max))
+    ;; Insert each implementation
+    (dolist (node decl-nodes)
+      (cpp-func-impl--insert-implementation node insert-doc))
+    (message "Implemented %d method(s)" (length decl-nodes))))
+
+;;;###autoload
+(defun cpp-func-impl-implement-dwim (&optional insert-doc)
+  "Implement selected methods of the class in DWIM fashion.
+
+If called with no region selection, call `cpp-func-impl-implement'
+otherwise `cpp-func-impl-implement-region'
+
+If called with a prefix argument INSERT-DOC (\\[universal-argument]),
+comment placeholders will be inserted inside function bodies."
+  (interactive "P")
+  (cpp-func-impl--ensure-cpp-treesit)
+  (if (use-region-p)
+      (cpp-func-impl-implement-region insert-doc)
+    (cpp-func-impl-implement insert-doc)))
+
 
 ;;;###autoload
 (defun cpp-func-impl-concrete-class ()
