@@ -2,7 +2,8 @@
 
 ## 0.1.2
 
-- Region selection to select methods to implement
+- Region selection to select methods to implement `M-x cpp-func-impl-implement-region`
+- DWIM (Do What I Mean) fashion command `M-x cpp-func-impl-implement-dwim`
 
 ## 0.1.1
 
