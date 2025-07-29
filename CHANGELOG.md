@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.1.2
+
+- Region selection to select methods to implement
+
 ## 0.1.1
 
 - Handle `final`, `override` specifiers in method implementation
