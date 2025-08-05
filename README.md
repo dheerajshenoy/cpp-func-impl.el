@@ -177,6 +177,7 @@ Check [CHANGELOG.md](./CHANGELOG.md)
 
 # TODO
 
+- [ ] Trim default arguments
 - [x] Nested class environments
 - [ ] Auto discovery of already existing method definition.
 - [x] Type qualifier awareness
